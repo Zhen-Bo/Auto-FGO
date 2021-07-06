@@ -245,7 +245,8 @@ class worker(base_unit):
         self.select_friend()
         if state == "menu":
             start = self.standby("start", tap=False)
-            self.tap(self.button["team"][self.team])
+            self.tap(self.button["team"]["{}".format(self.team)])
+            time.sleep(1)
             self.tap(start)
         print("[BATTLE]進入關卡")
 
