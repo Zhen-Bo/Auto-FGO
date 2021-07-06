@@ -104,7 +104,7 @@ class base_unit():
 
 
 class worker(base_unit):
-    def __init__(self, root, device, templates, times: int, apple: str, count: int, support, recover: int):
+    def __init__(self, root, device, templates, times: int, apple: str, count: int, team: int, support, recover: int):
         super().__init__(device, templates)
         self.root = root
         self.max_times = int(times)
@@ -114,6 +114,7 @@ class worker(base_unit):
             self.count = int(count)
         else:
             self.count = 0
+        self.team = team
         self.recover = recover
         self.friend = self.get_friend(support)
         self.button = self.get_button()
@@ -243,7 +244,9 @@ class worker(base_unit):
             state = self.enter_stage()
         self.select_friend()
         if state == "menu":
-            self.standby("start")
+            start = self.standby("start", tap=False)
+            self.tap(self.button["team"][self.team])
+            self.tap(start)
         print("[BATTLE]進入關卡")
 
     def finish_stage(self):
