@@ -245,9 +245,12 @@ class worker(base_unit):
         self.select_friend()
         if state == "menu":
             start = self.standby("start", tap=False)
-            self.tap(self.button["team"]["{}".format(self.team)])
-            time.sleep(1)
-            self.tap(start)
+            select = self.compare(self.templates["yello_dot"], self.screenshot,
+                                  crop=self.button["team_select"]["{}".format(self.team)])
+            if isinstance(select, bool):
+                self.tap(self.button["team"]["{}".format(self.team)])
+                time.sleep(1)
+            self.standby("start")
         print("[BATTLE]進入關卡")
 
     def finish_stage(self):

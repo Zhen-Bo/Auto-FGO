@@ -89,11 +89,13 @@ if __name__ == '__main__':
     times = input("請問要執行幾次:")
     bot = worker(root=root_path, device=dev, templates=templates, times=times,
                  apple=script_data['apple'], count=script_data['count'], team=script_data['team'], support=script_data['support'], recover=script_data['recover'])
-    while True:
-        for instruct in script_data['battle']:
-            exec("bot.{}".format(instruct))
-            time.sleep(1)
-    # debug = True
-    # while debug:
-    #     shell = input()
-    #     exec("bot.{}".format(shell))
+    debug = False
+    if debug:
+        while debug:
+            shell = input()
+            exec("bot.{}".format(shell))
+    else:
+        while True:
+            for instruct in script_data['battle']:
+                exec("bot.{}".format(instruct))
+                time.sleep(1)
