@@ -87,8 +87,8 @@ if __name__ == '__main__':
     script_data = get_script()
     templates = get_template(script_data["version"])
     times = input("請問要執行幾次:")
-    bot = worker(root_path, dev, templates, times, script_data['apple'], script_data['count'],
-                 script_data['support'], script_data['recover'])
+    bot = worker(root=root_path, device=dev, templates=templates, times=times,
+                 apple=script_data['apple'], count=script_data['count'], team=script_data['team'], support=script_data['support'], recover=script_data['recover'])
     while True:
         for instruct in script_data['battle']:
             exec("bot.{}".format(instruct))
