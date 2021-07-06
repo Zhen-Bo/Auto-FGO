@@ -143,26 +143,18 @@ class worker(base_unit):
             result = self.standby(["noap", "select_friend"], tap=False)
             if result[0] == "noap":
                 print("[Waring]體力耗盡")
-                if self.apple == "saint" and self.count > 0:
-                    self.tap((370, 130))
+                if self.count > 0:
+                    self.tap(self.button["apple"][self.apple])
                     self.standby("confirm")
                     self.count -= 1
-                    print("[INFO]使用聖晶石回體!")
-                elif self.apple == "gold" and self.count > 0:
-                    self.tap((370, 230))
-                    self.standby("confirm")
-                    self.count -= 1
-                    print("[INFO]使用金蘋果回體!")
-                elif self.apple == "silver" and self.count > 0:
-                    self.tap((370, 330))
-                    self.standby("confirm")
-                    self.count -= 1
-                    print("[INFO]使用銀蘋果回體!")
-                elif self.apple == "copper" and self.count > 0:
-                    self.tap((370, 425))
-                    self.standby("confirm")
-                    self.count -= 1
-                    print("[INFO]使用銅蘋果回體!")
+                    if self.apple == "quartz":
+                        print("[INFO]使用聖晶石回體!")
+                    elif self.apple == "goldden":
+                        print("[INFO]使用金蘋果回體!")
+                    elif self.apple == "silver":
+                        print("[INFO]使用銀蘋果回體!")
+                    elif self.apple == "copper":
+                        print("[INFO]使用銅蘋果回體!")
                 else:
                     self.tap((470, 470))
                     print("[INFO]等帶回體中...")
