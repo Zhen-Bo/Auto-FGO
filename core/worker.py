@@ -106,7 +106,7 @@ class base_unit():
 
 
 class worker(base_unit):
-    def __init__(self, root, device, templates, name, times: int, apple: str, count: int, team: int, support, recover: int):
+    def __init__(self, root, device, templates, name, times: int, apple: str, count: int, team: int, support, recover: int, progress_bar):
         self.root = root
         super().__init__(device, templates)
         self.name = name
@@ -124,6 +124,7 @@ class worker(base_unit):
         self.recover = recover
         self.friend = self.get_friend(support)
         self.button = self.get_button()
+        self.pbar = progress_bar
 
     def get_button(self):
         with open('{}/UserData/button.json'.format(self.root), newline='') as jsonfile:
@@ -150,9 +151,8 @@ class worker(base_unit):
         elif self.apple == "g":
             applestr = "自然回體"
         print("使用中的腳本:{}".format(self.name))
-        with tqdm(total=self.max_times, desc="腳本進度", bar_format="{{desc:}}{{percentage:3.0f}}%|{{bar:20}}|完成: {}/ {}".format(self.runtimes-1, self.max_times)) as pbar:
-            pbar.update(self.runtimes-1)
-        # TODO tqdm
+        with tqdm(total=self.max_times, desc="腳本進度", bar_format="{{desc:}}{{percentage:3.0f}}%|{{bar:20}}|完成: {}/ {}".format(self.runtimes-1, self.max_times)) as rbar:
+            rbar.update(self.runtimes-1)
         print("回體方式: {} /額度: {} /已使用: {} /剩餘: {}".format(
             applestr, self.maxapple, self.use, self.count))
         print("總運行時間為: {} /上回循環時間為: {}".format(
@@ -166,24 +166,27 @@ class worker(base_unit):
         else:
             print("===============================================")
             print("[INFO]準備開始第 {} 輪".format(self.runtimes))
+            self.pbar.display()
             if result[0] == "menu":
                 state = result[0]
                 self.tap((750, 160))
             else:
                 state = result[0]
                 self.tap(result[1])
-            # print("\r", end='', flush=True)
-            sys.stdout.write("\033[F")  # back to previous line
-            sys.stdout.write("\033[K")  # clear line
-            print("[INFO]進入關卡")
+            self.pbar.clear()
+            print("[INFO]嘗試進入關卡")
+            self.pbar.reset()
             result = self.standby(["noap", "select_friend"], tap=False)
             if result[0] == "noap":
+                self.pbar.clear()
                 print("[Waring]體力耗盡")
+                self.pbar.display()
                 if self.count > 0:
                     self.tap(self.button["apple"][self.apple])
                     self.standby("confirm")
                     self.count -= 1
                     self.use += 1
+                    self.pbar.clear()
                     if self.apple == "quartz":
                         print("[INFO]使用聖晶石回體!")
                     elif self.apple == "goldden":
@@ -194,33 +197,31 @@ class worker(base_unit):
                         print("[INFO]使用銅蘋果回體!")
                 else:
                     self.tap((470, 470))
-                    print("[INFO]等帶回體中...")
+                    self.pbar.clear()
+                    print("[INFO]等待回體中...", end='\r')
                     start_time = time.time()
                     end_time = time.time()
                     while not int(end_time-start_time) >= self.recover*60:
                         remain = round(
                             self.recover - float(int(end_time-start_time)/60), 1)
                         if remain >= 60:
-                            print("[INFO]等待回體中...,剩餘 {} 分鐘".format(
-                                remain), end='\r', flush=True)
+                            print("[INFO]等待回體中...,剩餘 {} 分鐘".format(remain))
                         else:
-                            print("[INFO]等待回體中...,剩餘 {} 秒鐘       ".format(
-                                remain), end='\r', flush=True)
+                            print("[INFO]等待回體中...,剩餘 {} 秒鐘".format(remain))
                         for i in range(30):
                             end_time = time.time()
                             if int(end_time-start_time) >= self.recover*60:
                                 break
                             time.sleep(1)
-                    self.enter_stage(total, singel)
+                    state = self.enter_stage(total, singel)
+            self.pbar.update(1)
             return state
 
     def skill(self, position: int, skill: int, target=None):
         self.standby("attack", tap=False, coordinate=(670, 25))
         self.tap(self.button["servert{}".format(position)]
                  ["skill{}".format(skill)])
-        # print("\r", end='', flush=True)
-        sys.stdout.write("\033[F")  # back to previous line
-        sys.stdout.write("\033[K")  # clear line
+        self.pbar.clear()
         print("[BATTLE]使用從者 {} 技能 {} ".format(
             position, skill), end='')
         if target is not None:
@@ -229,13 +230,13 @@ class worker(base_unit):
             self.tap(self.button["servert{}".format(target)]["locate"])
         else:
             print("")
+        self.pbar.update(1)
 
     def attack(self, first=None, second=None, third=None):
         self.standby("attack", coordinate=(670, 25))
-        # print("\r", end='', flush=True)
-        sys.stdout.write("\033[F")  # back to previous line
-        sys.stdout.write("\033[K")  # clear line
+        self.pbar.clear()
         print("[BATTLE]準備使用指令卡")
+        self.pbar.display()
         time.sleep(3)
         select = [first, second, third]
         card = ""
@@ -253,16 +254,18 @@ class worker(base_unit):
                 else:
                     card += "指令卡 {}/".format(select[i])
                 self.tap(self.button["card"]["{}".format(select[i])])
+        self.pbar.clear()
         print("[BATTLE]使用 {}".format(card))
+        self.pbar.update(1)
 
     def master(self, skill, target=None):
         self.standby("attack", tap=False, coordinate=(670, 25))
-        # print("\r", end='', flush=True)
-        sys.stdout.write("\033[F")  # back to previous line
-        sys.stdout.write("\033[K")  # clear line
+        self.pbar.clear()
         print("[MASTER]準備使用御主技能")
+        self.pbar.display()
         self.tap(self.button["master"]["locate"])
         time.sleep(1)
+        self.pbar.clear()
         print("[MASTER]使用御主技能 {}".format(skill), end='')
         self.tap(self.button["master"]["skill{}".format(skill)])
         if target is not None:
@@ -271,21 +274,23 @@ class worker(base_unit):
             self.tap(self.button["servert{}".format(target)]["locate"])
         else:
             print("")
+        self.pbar.update(1)
 
     def change(self, front: int, back: int):
         self.standby("attack", tap=False, coordinate=(670, 25))
-        # print("\r", end='', flush=True)
-        sys.stdout.write("\033[F")  # back to previous line
-        sys.stdout.write("\033[K")  # clear line
+        self.pbar.clear()
         print("[Change]準備更換角色")
+        self.pbar.display()
         self.tap(self.button["master"]["locate"])
         time.sleep(1)
         self.tap(self.button["master"]["skill3"])
         self.standby("order_change", tap=False)
+        self.pbar.clear()
         print("[Change]前排 {} 號從者,更換成後排 {} 號從者".format(front, back))
         self.tap(self.button["change"]["{}".format(front)])
         self.tap(self.button["change"]["{}".format(back+3)])
         self.tap(self.button["change"]["confirm"])
+        self.pbar.update(1)
 
     def start_battle(self, total, singel):
         self.runtimes += 1
@@ -302,19 +307,23 @@ class worker(base_unit):
                 self.tap(self.button["team"]["{}".format(self.team)])
                 time.sleep(1)
             self.standby("start")
-
-        print("[BATTLE]進入關卡", flush=True)
+        self.pbar.clear()
+        print("[BATTLE]進入關卡")
+        self.pbar.update(1)
 
     def finish_stage(self):
-        sys.stdout.write("\033[F")  # back to previous line
-        sys.stdout.write("\033[K")  # clear line
-        print("[Finish]等待下一步...", flush=True)
+        self.pbar.clear()
+        print("[Finish]等待下一步...")
+        self.pbar.update(1)
         self.standby("next", coordinate=(670, 25))
         result = self.standby(["continue", "menu", "friendrequest"], tap=False)
         if result[0] == "friendrequest":
-            print("[Finish]拒絕好友申請", flush=True)
+            self.pbar.clear()
+            print("[Finish]拒絕好友申請")
+            self.pbar.display()
             self.tap([250, 465])
-        print("[Finish]完成關卡!!", flush=True)
+        self.pbar.clear()
+        print("[Finish]完成關卡!!")
 
     def get_friend(self, support):
         support_path = os.path.join(self.root, "UserData")
@@ -333,7 +342,9 @@ class worker(base_unit):
         have_bar = False
         found = False
         bar_crop = {'x': 910, 'y': 140, 'width': 50, 'height': 400}
-        print("[Support]開始選擇Support角色", flush=True)
+        self.pbar.clear()
+        print("[Support]開始選擇Support角色")
+        self.pbar.display()
         while not found:
             have_bar = self.compare(self.templates["bar"], crop=bar_crop)
             if isinstance(have_bar, list):
@@ -342,15 +353,19 @@ class worker(base_unit):
                 have_bar = True
             result = self.standby(["no_friend", "friend_bar"], tap=False)
             if result[0] == "no_friend":
-                print("[Support]沒有符合條件好友,將更新列表", flush=True)
+                self.pbar.clear()
+                print("[Support]沒有符合條件好友,將更新列表")
+                self.pbar.display()
                 self.standby("update")
                 self.standby("refresh")
                 self.standby("dis_refresh", disapper=True)
             else:
                 result = self.compare(self.friend)
                 if isinstance(result, list):
-                    print("[Support]發現符合好友角色!", flush=True)
+                    self.pbar.clear()
+                    print("[Support]發現符合好友角色!")
                     self.tap(result[1])
+                    self.pbar.update(1)
                     found = True
                 else:
                     if have_bar:
@@ -359,8 +374,10 @@ class worker(base_unit):
                             time.sleep(1)
                             result = self.compare(self.friend)
                             if isinstance(result, list):
-                                print("[Support]發現符合好友角色!", flush=True)
+                                self.pbar.clear()
+                                print("[Support]發現符合好友角色!")
                                 self.tap(result[1])
+                                self.pbar.update(1)
                                 found = True
                                 break
                             else:
@@ -369,14 +386,17 @@ class worker(base_unit):
                                 result = self.compare(
                                     self.templates["friendEnd"], self.screenshot, crop=end_crop)
                                 if isinstance(result, list):
-                                    print("[Support]好友列表已經至底,將更新列表",
-                                          flush=True)
+                                    self.pbar.clear()
+                                    print("[Support]好友列表已經至底,將更新列表")
+                                    self.pbar.display()
                                     self.standby("update")
                                     self.standby("refresh")
                                     self.standby("dis_refresh", disapper=True)
                                     break
                     else:
-                        print("[Support]沒有符合條件好友,將更新列表", flush=True)
+                        self.pbar.clear()
+                        print("[Support]沒有符合條件好友,將更新列表")
+                        self.pbar.display()
                         self.standby("update")
                         self.standby("refresh")
                         self.standby("dis_refresh", disapper=True)

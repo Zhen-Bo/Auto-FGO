@@ -6,6 +6,7 @@ from cv2 import cv2
 import json
 import sys
 from tqdm import tqdm
+import argparse
 __author__ = "Paver(Zhen_Bo)"
 
 os.system('cls')
@@ -84,17 +85,26 @@ def get_script():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug", type=bool, default=False)
+    args = parser.parse_args()
+    debug = args.debug
     os.system('cls')
     dev = setup()
     os.system('cls')
     script_data = get_script()
     templates = get_template(script_data["version"])
     times = input("請問要執行幾次:")
+    width = len(script_data['battle'])+2
+    bar_format = "{{desc:}}{{percentage:3.0f}}%|{{bar:{}}}|".format(
+        width)
+    progress = tqdm(range(width), desc="腳本進度",
+                    bar_format=bar_format, file=sys.stdout)
     bot = worker(root=root_path, device=dev, templates=templates, name=script_data["name"], times=times,
-                 apple=script_data['apple'], count=script_data['count'], team=script_data['team'], support=script_data['support'], recover=script_data['recover'])
+                 apple=script_data['apple'], count=script_data['count'], team=script_data['team'],
+                 support=script_data['support'], recover=script_data['recover'], progress_bar=progress)
     total_runtime = 0
     singel_runtime = 0
-    debug = False
     if debug:
         while debug:
             shell = input()
@@ -102,18 +112,20 @@ if __name__ == '__main__':
     else:
         while True:
             tstart = time.time()
-            width = len(script_data['battle'])
-            bar_format = "{{desc:}}{{percentage:3.0f}}%|{{bar:{}}}|".format(
-                width)
-            progress = tqdm(script_data['battle'], desc="關卡進度",
-                            bar_format=bar_format, file=sys.stdout)
-            for instruct in progress:
+            bot.pbar.reset()
+            for instruct in script_data["battle"]:
                 if instruct == "start_battle()":
                     instruct = "start_battle({},{})".format(
                         round(total_runtime, 1), round(singel_runtime, 1))
-                print("\r", end='')
                 exec("bot.{}".format(instruct))
                 time.sleep(1)
+            # for instruct in progress:
+            #     if instruct == "start_battle()":
+            #         instruct = "start_battle({},{})".format(
+            #             round(total_runtime, 1), round(singel_runtime, 1))
+            #     print("\r", end='')
+            #     exec("bot.{}".format(instruct))
+            #     time.sleep(1)
             tend = time.time()
             singel_runtime = int(tend)-int(tstart)
             total_runtime += singel_runtime
