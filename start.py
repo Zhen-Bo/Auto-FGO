@@ -4,6 +4,8 @@ from core.worker import worker
 from ppadb.client import Client
 from cv2 import cv2
 import json
+import sys
+from tqdm import tqdm
 __author__ = "Paver(Zhen_Bo)"
 
 os.system('cls')
@@ -14,6 +16,7 @@ root_path = os.path.dirname(os.path.abspath(__file__))
 def setup():
     adb_path = "{}/adb/adb.exe".format(root_path)
     os.system("{0} start-server".format(adb_path))
+    os.system("cls")
     client = Client(host="127.0.0.1", port=5037)
     devices = client.devices()
     device = select_devices(client, devices)
@@ -87,8 +90,10 @@ if __name__ == '__main__':
     script_data = get_script()
     templates = get_template(script_data["version"])
     times = input("請問要執行幾次:")
-    bot = worker(root=root_path, device=dev, templates=templates, times=times,
+    bot = worker(root=root_path, device=dev, templates=templates, name=script_data["name"], times=times,
                  apple=script_data['apple'], count=script_data['count'], team=script_data['team'], support=script_data['support'], recover=script_data['recover'])
+    total_runtime = 0
+    singel_runtime = 0
     debug = False
     if debug:
         while debug:
@@ -96,6 +101,19 @@ if __name__ == '__main__':
             exec("bot.{}".format(shell))
     else:
         while True:
-            for instruct in script_data['battle']:
+            tstart = time.time()
+            width = len(script_data['battle'])
+            bar_format = "{{desc:}}{{percentage:3.0f}}%|{{bar:{}}}|".format(
+                width)
+            progress = tqdm(script_data['battle'], desc="關卡進度",
+                            bar_format=bar_format, file=sys.stdout)
+            for instruct in progress:
+                if instruct == "start_battle()":
+                    instruct = "start_battle({},{})".format(
+                        round(total_runtime, 1), round(singel_runtime, 1))
+                print("\r", end='')
                 exec("bot.{}".format(instruct))
                 time.sleep(1)
+            tend = time.time()
+            singel_runtime = int(tend)-int(tstart)
+            total_runtime += singel_runtime
