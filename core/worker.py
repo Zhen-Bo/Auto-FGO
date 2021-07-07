@@ -56,12 +56,12 @@ class base_unit():
                 pos = sift(imgs, self.screenshot, debug=debug)
                 if isinstance(pos, list):
                     pos = np.int32(pos)
-                    return [pos[0], pos[1]]
+                    return ["", [pos[0], pos[1]]]
             else:
                 pos = match(imgs, self.screenshot, debug=debug)
                 if isinstance(pos, list):
                     pos = np.int32(pos)
-                    return [pos[0], pos[1]]
+                    return ["", [pos[0], pos[1]]]
         return False
 
     def standby(self, img, coordinate=None, mode=0, tap=True, disapper=False, debug=False):
@@ -80,10 +80,7 @@ class base_unit():
                 if coordinate is not None:
                     self.tap([coordinate[0], coordinate[1]])
             if tap:
-                try:
-                    self.tap(flag)
-                except:
-                    self.tap(flag[1])
+                self.tap(flag[1])
             else:
                 return flag
         else:
@@ -237,7 +234,7 @@ class worker(base_unit):
         self.pbar.clear()
         print("[BATTLE]準備使用指令卡")
         self.pbar.display()
-        time.sleep(3)
+        time.sleep(1)
         select = [first, second, third]
         card = ""
         for i in range(len(select)):
