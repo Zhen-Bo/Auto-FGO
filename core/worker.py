@@ -145,7 +145,7 @@ class worker(base_unit):
             applestr = "銀蘋果"
         elif self.apple == "copper":
             applestr = "銅蘋果"
-        elif self.apple == "g":
+        elif self.apple == "":
             applestr = "自然回體"
         print("使用中的腳本:{}".format(self.name))
         with tqdm(total=self.max_times, desc="腳本進度", bar_format="{{desc:}}{{percentage:3.0f}}%|{{bar:20}}|完成: {}/ {}".format(self.runtimes-1, self.max_times)) as rbar:
