@@ -234,7 +234,7 @@ class worker(base_unit):
         self.pbar.clear()
         print("[BATTLE]準備使用指令卡")
         self.pbar.display()
-        time.sleep(1)
+        time.sleep(2)
         select = [first, second, third]
         card = ""
         for i in range(len(select)):
