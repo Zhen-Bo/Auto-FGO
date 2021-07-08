@@ -164,7 +164,7 @@ def new_script():
             instrument = "attack("
             for number in card:
                 if number == "":
-                    instrument += ","
+                    instrument += "None,"
                 else:
                     instrument += "{},".format(number)
             instrument = instrument[:-1]

@@ -9,6 +9,7 @@ from tqdm import tqdm
 import json
 from core.match_func import sift
 from core.match_func import match_template as match
+import threading
 
 
 class base_unit():
@@ -170,12 +171,12 @@ class worker(base_unit):
             else:
                 state = result[0]
                 self.tap(result[1])
-            self.pbar.clear()
+            print("\r\x1b[2K", end='')
             print("[INFO]嘗試進入關卡")
             self.pbar.reset()
             result = self.standby(["noap", "select_friend"], tap=False)
             if result[0] == "noap":
-                self.pbar.clear()
+                print("\r\x1b[2K", end='')
                 print("[Waring]體力耗盡")
                 self.pbar.display()
                 if self.count > 0:
@@ -183,7 +184,7 @@ class worker(base_unit):
                     self.standby("confirm")
                     self.count -= 1
                     self.use += 1
-                    self.pbar.clear()
+                    print("\r\x1b[2K", end='')
                     if self.apple == "quartz":
                         print("[INFO]使用聖晶石回體!")
                     elif self.apple == "goldden":
@@ -194,7 +195,7 @@ class worker(base_unit):
                         print("[INFO]使用銅蘋果回體!")
                 else:
                     self.tap((470, 470))
-                    self.pbar.clear()
+                    print("\r\x1b[2K", end='')
                     print("[INFO]等待回體中...", end='\r')
                     start_time = time.time()
                     end_time = time.time()
@@ -218,7 +219,7 @@ class worker(base_unit):
         self.standby("attack", tap=False, coordinate=(670, 25))
         self.tap(self.button["servert{}".format(position)]
                  ["skill{}".format(skill)])
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[BATTLE]使用從者 {} 技能 {} ".format(
             position, skill), end='')
         if target is not None:
@@ -231,7 +232,7 @@ class worker(base_unit):
 
     def attack(self, first=None, second=None, third=None):
         self.standby("attack", coordinate=(670, 25))
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[BATTLE]準備使用指令卡")
         self.pbar.display()
         time.sleep(2)
@@ -251,18 +252,18 @@ class worker(base_unit):
                 else:
                     card += "指令卡 {}/".format(select[i])
                 self.tap(self.button["card"]["{}".format(select[i])])
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[BATTLE]使用 {}".format(card))
         self.pbar.update(1)
 
     def master(self, skill, target=None):
         self.standby("attack", tap=False, coordinate=(670, 25))
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[MASTER]準備使用御主技能")
         self.pbar.display()
         self.tap(self.button["master"]["locate"])
         time.sleep(1)
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[MASTER]使用御主技能 {}".format(skill), end='')
         self.tap(self.button["master"]["skill{}".format(skill)])
         if target is not None:
@@ -275,14 +276,14 @@ class worker(base_unit):
 
     def change(self, front: int, back: int):
         self.standby("attack", tap=False, coordinate=(670, 25))
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[Change]準備更換角色")
         self.pbar.display()
         self.tap(self.button["master"]["locate"])
         time.sleep(1)
         self.tap(self.button["master"]["skill3"])
         self.standby("order_change", tap=False)
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[Change]前排 {} 號從者,更換成後排 {} 號從者".format(front, back))
         self.tap(self.button["change"]["{}".format(front)])
         self.tap(self.button["change"]["{}".format(back+3)])
@@ -304,22 +305,22 @@ class worker(base_unit):
                 self.tap(self.button["team"]["{}".format(self.team)])
                 time.sleep(1)
             self.standby("start")
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[BATTLE]進入關卡")
         self.pbar.update(1)
 
     def finish_stage(self):
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[Finish]等待下一步...")
         self.pbar.update(1)
         self.standby("next", coordinate=(670, 25))
         result = self.standby(["continue", "menu", "friendrequest"], tap=False)
         if result[0] == "friendrequest":
-            self.pbar.clear()
+            print("\r\x1b[2K", end='')
             print("[Finish]拒絕好友申請")
             self.pbar.display()
             self.tap([250, 465])
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[Finish]完成關卡!!")
 
     def get_friend(self, support):
@@ -339,7 +340,7 @@ class worker(base_unit):
         have_bar = False
         found = False
         bar_crop = {'x': 910, 'y': 140, 'width': 50, 'height': 400}
-        self.pbar.clear()
+        print("\r\x1b[2K", end='')
         print("[Support]開始選擇Support角色")
         self.pbar.display()
         while not found:
@@ -350,7 +351,7 @@ class worker(base_unit):
                 have_bar = True
             result = self.standby(["no_friend", "friend_bar"], tap=False)
             if result[0] == "no_friend":
-                self.pbar.clear()
+                print("\r\x1b[2K", end='')
                 print("[Support]沒有符合條件好友,將更新列表")
                 self.pbar.display()
                 self.standby("update")
@@ -359,7 +360,7 @@ class worker(base_unit):
             else:
                 result = self.compare(self.friend)
                 if isinstance(result, list):
-                    self.pbar.clear()
+                    print("\r\x1b[2K", end='')
                     print("[Support]發現符合好友角色!")
                     self.tap(result[1])
                     self.pbar.update(1)
@@ -371,7 +372,7 @@ class worker(base_unit):
                             time.sleep(1)
                             result = self.compare(self.friend)
                             if isinstance(result, list):
-                                self.pbar.clear()
+                                print("\r\x1b[2K", end='')
                                 print("[Support]發現符合好友角色!")
                                 self.tap(result[1])
                                 self.pbar.update(1)
@@ -383,7 +384,7 @@ class worker(base_unit):
                                 result = self.compare(
                                     self.templates["friendEnd"], self.screenshot, crop=end_crop)
                                 if isinstance(result, list):
-                                    self.pbar.clear()
+                                    print("\r\x1b[2K", end='')
                                     print("[Support]好友列表已經至底,將更新列表")
                                     self.pbar.display()
                                     self.standby("update")
@@ -391,9 +392,44 @@ class worker(base_unit):
                                     self.standby("dis_refresh", disapper=True)
                                     break
                     else:
-                        self.pbar.clear()
+                        print("\r\x1b[2K", end='')
                         print("[Support]沒有符合條件好友,將更新列表")
                         self.pbar.display()
                         self.standby("update")
                         self.standby("refresh")
                         self.standby("dis_refresh", disapper=True)
+
+
+class box(base_unit):
+    def __init__(self, device, templates):
+        super().__init__(device, templates)
+        self.status = "stop"
+        self.result = None
+
+    def gacha_tap(self):
+        while True:
+            if self.status not in ["full", "complete"]:
+                self.tap([300, 330])
+            else:
+                break
+
+    def box_gacha(self):
+        self.status = "start"
+        job = threading.Thread(target=self.gacha_tap)
+        job.start()
+        self.result = self.standby(["reset", "box_full"], tap=False)
+        if self.result[0] == "box_full":
+            self.status = "full"
+            self.tap(self.result[1])
+            print("禮物箱已滿!!")
+            job.join()
+            return True
+        else:
+            self.status = "complete"
+            time.sleep(0.5)
+            # self.tap(self.result[1])
+            print("完成!!")
+            # self.standby("execute")
+            # self.standby("close")
+            job.join()
+            return False
