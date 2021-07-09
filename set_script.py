@@ -246,7 +246,6 @@ def new_script():
                     break
             instrument += ")"
             script["battle"].append(instrument)
-            break
         elif instr == "9":
             script["battle"].append("finish_stage()")
             break

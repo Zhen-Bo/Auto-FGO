@@ -2,6 +2,7 @@
 UserData/script.json
 
 # Byte-compiled / optimized / DLL files
+.virtual/
 .vscode/
 __pycache__/
 *.py[cod]

@@ -196,19 +196,21 @@ class worker(base_unit):
                 else:
                     self.tap((470, 470))
                     print("\r\x1b[2K", end='')
-                    print("[INFO]等待回體中...", end='\r')
+                    print("[INFO]等待回體中...")
                     start_time = time.time()
                     end_time = time.time()
-                    while not int(end_time-start_time) >= self.recover*60:
+                    while not int(end_time-start_time) >= int(self.recover)*60:
                         remain = round(
-                            self.recover - float(int(end_time-start_time)/60), 1)
+                            int(self.recover) - float(int(end_time-start_time)/60), 1)
                         if remain >= 60:
+                            print("\x1b[1A\r\x1b[2K", end='')
                             print("[INFO]等待回體中...,剩餘 {} 分鐘".format(remain))
                         else:
+                            print("\x1b[1A\r\x1b[2K", end='')
                             print("[INFO]等待回體中...,剩餘 {} 秒鐘".format(remain))
                         for i in range(30):
                             end_time = time.time()
-                            if int(end_time-start_time) >= self.recover*60:
+                            if int(end_time-start_time) >= int(self.recover)*60:
                                 break
                             time.sleep(1)
                     state = self.enter_stage(total, singel)

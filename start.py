@@ -74,7 +74,7 @@ def select_devices(client, devices, error=0):
 
 
 def get_script():
-    with open('{}/UserData/script.json'.format(root_path), newline='') as jsonfile:
+    with open('{}/UserData/script.json'.format(root_path), newline='', encoding='utf8') as jsonfile:
         data = json.load(jsonfile)
         print("請選擇要使用的腳本")
         for i in range(len(data['script'])):
@@ -89,7 +89,7 @@ def get_script():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", type=bool, default=False)
-    parser.add_argument("--boxmode", type=bool, default=True)
+    parser.add_argument("--boxmode", type=bool, default=False)
     parser.add_argument("--version", type=str, default="JP")
     args = parser.parse_args()
     debug = args.debug
