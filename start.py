@@ -20,8 +20,7 @@ def setup():
     os.system("cls")
     client = Client(host="127.0.0.1", port=5037)
     devices = client.devices()
-    device = select_devices(client, devices)
-    return device
+    return select_devices(client, devices)
 
 
 def get_template(version, folder=None):
@@ -53,8 +52,7 @@ def select_devices(client, devices, error=0):
             os.system('cls')
             return select_devices(client, devices, 1)
         else:
-            device = devices[value]
-            return device
+            return devices[value]
     except (KeyboardInterrupt, SystemExit):
         raise Exception("KeyboardInterrupt")
     except:

@@ -126,8 +126,7 @@ class worker(base_unit):
 
     def get_button(self):
         with open('{}/UserData/button.json'.format(self.root), newline='') as jsonfile:
-            data = json.load(jsonfile)
-        return data
+            return json.load(jsonfile)
 
     def timecal(self, time):
         if time > 60:
