@@ -11,7 +11,16 @@ __author__ = "Paver(Zhen_Bo)"
 
 os.system('cls')
 
-root_path = os.path.dirname(os.path.abspath(__file__))
+
+def app_path():
+    """Returns the base application path."""
+    if hasattr(sys, 'frozen'):
+        # Handles PyInstaller
+        return os.path.dirname(sys.executable)  # 使用pyinstaller打包后的exe目录
+    return os.path.dirname(__file__)  # 没打包前的py目录
+
+
+root_path = app_path()
 
 
 def setup():
@@ -71,6 +80,31 @@ def select_devices(client, devices, error=0):
             return select_devices(client, devices, 2)
 
 
+def recovery_plane():
+    apple_dict = {"": "", "0": "quartz",
+                  "1": "goldden", "2": "silver", "3": "copper"}
+    apple_name = {"": "自然回體", "0": "聖晶石", "1": "金蘋果", "2": "銀蘋果", "3": "銅蘋果"}
+    while True:
+        os.system('cls')
+        print("回體方案:")
+        for i in range(1, 4):
+            print("{} = {}".format(i, apple_name["{}".format(i)]))
+        print("不輸入為自然回體")
+        apple = input("請選擇方案: ")
+        if apple not in apple_dict:
+            continue
+        else:
+            apple = apple_dict[apple]
+            if apple == "":
+                return {"apple": "", "count": ""}
+            else:
+                break
+    while True:
+        count = input("請輸入使用上限: ")
+        if count.isdigit():
+            return {"apple": apple, "count": count}
+
+
 def get_script():
     with open('{}/UserData/script.json'.format(root_path), newline='', encoding='utf8') as jsonfile:
         data = json.load(jsonfile)
@@ -99,14 +133,21 @@ if __name__ == '__main__':
     if boxmode == False:
         script_data = get_script()
         templates = get_template(script_data["version"])
-        times = input("請問要執行幾次:")
+        while True:
+            times = input("請問要執行幾次:")
+            if times == "":
+                times = 999
+                break
+            elif times.isdigit():
+                break
+        apple = recovery_plane()
         width = len(script_data['battle'])+2
         bar_format = "{{desc:}}{{percentage:3.0f}}%|{{bar:{}}}|".format(
             width)
         progress = tqdm(range(width), desc="腳本進度",
                         bar_format=bar_format, file=sys.stdout)
         bot = worker(root=root_path, device=dev, templates=templates, name=script_data["name"], times=times,
-                     apple=script_data['apple'], count=script_data['count'], team=script_data['team'],
+                     apple=apple['apple'], count=apple['count'], team=script_data['team'],
                      support=script_data['support'], recover=script_data['recover'], progress_bar=progress)
         print("\r\x1b[2K", end='')
         total_runtime = 0
